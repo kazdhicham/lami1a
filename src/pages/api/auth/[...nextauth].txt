@@ -1,0 +1,50 @@
+
+import NextAuth from 'next-auth'
+import EmailProvider from 'next-auth/providers/email'
+import nodemailer from "nodemailer"
+//import ViewerModel from '@/api/viewer/Viewer.model'
+export default NextAuth({
+    providers: [
+        EmailProvider({
+            server: {
+                host: process.env.EMAIL_SERVER_HOST,
+                port: 465,
+                auth: {
+                    user: process.env.EMAIL_SERVER_USER,
+                    pass: process.env.EMAIL_SERVER_PASSWORD
+                }
+            },
+            from: process.env.EMAIL_MAILER_PRO,
+            async sendVerificationRequest({
+                identifier: email,
+                url,
+                provider: { server, from },
+            }) {
+                const { host } = new URL(url)
+                const transport = nodemailer.createTransport(server)
+                await transport.sendMail({
+                    to: email,
+                    from,
+                    subject: `Sign in to ${host}`,
+                    text: `Thank you to join us ___`,
+                    html: `Thank you to join us ___`,
+                })
+            },
+            async generateVerificationToken() {
+                return "ABC123"
+            },
+            /*  callback: {
+                 async redirect({ url, baseUrl }) {
+                     // Allows relative callback URLs
+                     if (url.startsWith("/")) return `${baseUrl}${url}`
+                     // Allows callback URLs on the same origin
+                     else if (new URL(url).origin === baseUrl) return url
+                     return baseUrl
+                 }
+             } */
+        })
+    ]
+})
+
+
+
